@@ -54,14 +54,26 @@ func (s *apiServer) shutdown() {
 }
 
 func (s *apiServer) routes() {
-	s.httpServer.router.GET("/search/articles", s.searchArticles)
-	s.httpServer.router.GET("/search/comments", s.searchComments)
+	s.httpServer.router.GET("/search/articles", s.getSearchArticles)
+	s.httpServer.router.GET("/search/comments", s.getSearchComments)
 }
 
-func (s *apiServer) searchArticles(c *gin.Context) {
+func (s *apiServer) getSearchArticles(c *gin.Context) {
+	query := &Query{}
+	if err := c.ShouldBindQuery(query); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	s.datastore.searchArticles(query)
 	c.JSON(http.StatusOK, "search articles")
 }
 
-func (s *apiServer) searchComments(c *gin.Context) {
+func (s *apiServer) getSearchComments(c *gin.Context) {
+	query := &Query{}
+	if err := c.ShouldBindQuery(query); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	s.datastore.searchComments(query)
 	c.JSON(http.StatusOK, "search comments")
 }

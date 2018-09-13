@@ -6,7 +6,10 @@ import (
 	"github.com/olivere/elastic"
 )
 
-type datastore interface{}
+type datastore interface {
+	searchArticles(*Query)
+	searchComments(*Query)
+}
 
 type elasticsearchClient struct {
 	client *elastic.Client
@@ -22,4 +25,12 @@ func newElasticsearchClient(elasticsearch string) *elasticsearchClient {
 		client: c,
 		index:  "gossip",
 	}
+}
+
+func (c *elasticsearchClient) searchArticles(query *Query) {
+	return
+}
+
+func (c *elasticsearchClient) searchComments(query *Query) {
+	return
 }
