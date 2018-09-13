@@ -74,6 +74,6 @@ func (s *apiServer) getSearchComments(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	s.datastore.searchComments(query)
-	c.JSON(http.StatusOK, "search comments")
+	result := s.datastore.searchComments(query)
+	c.JSON(http.StatusOK, result)
 }
