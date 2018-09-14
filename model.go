@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"time"
-
-	"github.com/olivere/elastic"
 )
 
 type CommentModel struct {
@@ -22,14 +19,6 @@ type ArticleModel struct {
 	Time     string         `json:"date"`
 	Content  string         `json:"content"`
 	Comments []CommentModel `json:"messages"`
-}
-
-func (m *ArticleModel) load(hit *elastic.SearchHit) {
-	sourceBytes := []byte(*hit.Source)
-	err := json.Unmarshal(sourceBytes, m)
-	if err != nil {
-		panic(err)
-	}
 }
 
 type CommentView struct {

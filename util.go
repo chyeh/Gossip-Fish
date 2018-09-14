@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/olivere/elastic"
 )
 
 func parseDateTime(year int, dateStr, timeStr string) time.Time {
@@ -27,4 +30,12 @@ func parseIPDateTime(year int, str string) (ip string, time time.Time) {
 	// IP address exists
 	ipStr, dateStr, timeStr := strSlc[0], strSlc[1], strSlc[2]
 	return ipStr, parseDateTime(year, dateStr, timeStr)
+}
+
+func loadModel(hit *elastic.SearchHit, v interface{}) {
+	sourceBytes := []byte(*hit.Source)
+	err := json.Unmarshal(sourceBytes, v)
+	if err != nil {
+		panic(err)
+	}
 }

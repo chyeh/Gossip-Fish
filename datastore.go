@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -73,7 +72,7 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 
 	for _, hit := range result.Hits.Hits {
 		articleModel := &ArticleModel{}
-		articleModel.load(hit)
+		loadModel(hit, articleModel)
 
 		articleView := SearchCommentsView{
 			Comments: make([]CommentView, len(articleModel.Comments)),
@@ -105,12 +104,8 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 		}
 
 		for i, innerHit := range hit.InnerHits["messages"].Hits.Hits {
-			var commentModel CommentModel
-			innerSourceBytes := []byte(*innerHit.Source)
-			err := json.Unmarshal(innerSourceBytes, &commentModel)
-			if err != nil {
-				panic(err)
-			}
+			commentModel := &CommentModel{}
+			loadModel(innerHit, commentModel)
 
 			var hitView CommentView
 			hitView.Account = commentModel.Account
