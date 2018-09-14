@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"time"
 
 	_ "github.com/lib/pq"
 
@@ -90,13 +89,7 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 		articleView.Author = articleModel.Author
 		articleView.Board = articleModel.Board
 		articleView.IP = articleModel.IP
-
-		t, err := time.Parse(time.ANSIC, articleModel.Time)
-		if err != nil {
-			panic(err)
-		}
-		articleView.Time = t
-
+		articleView.Time = parseANSICTime(articleModel.Time)
 		articleView.Content = articleModel.Content
 		for i, commentModel := range articleModel.Comments {
 			commentView := &CommentView{}

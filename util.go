@@ -32,6 +32,14 @@ func parseIPDateTime(year int, str string) (ip string, time time.Time) {
 	return ipStr, parseDateTime(year, dateStr, timeStr)
 }
 
+func parseANSICTime(timeStr string) time.Time {
+	t, err := time.Parse(time.ANSIC, timeStr)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
 func loadModel(hit *elastic.SearchHit, v interface{}) {
 	sourceBytes := []byte(*hit.Source)
 	err := json.Unmarshal(sourceBytes, v)
