@@ -73,10 +73,16 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 	for _, hit := range result.Hits.Hits {
 		articleModel := &ArticleModel{}
 		loadModel(hit, articleModel)
+		hitCommentModels := make([]*CommentModel, hit.InnerHits["messages"].Hits.TotalHits)
+		for i, innerHit := range hit.InnerHits["messages"].Hits.Hits {
+			hitCommentModel := &CommentModel{}
+			loadModel(innerHit, hitCommentModel)
+			hitCommentModels[i] = hitCommentModel
+		}
 
 		articleView := SearchCommentsView{
-			Comments: make([]CommentView, len(articleModel.Comments)),
-			Hits:     make([]CommentView, len(hit.InnerHits["messages"].Hits.Hits)),
+			Comments: make([]*CommentView, len(articleModel.Comments)),
+			Hits:     make([]*CommentView, len(hitCommentModels)),
 		}
 
 		articleView.ID = articleModel.ID
@@ -93,7 +99,7 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 
 		articleView.Content = articleModel.Content
 		for i, commentModel := range articleModel.Comments {
-			var commentView CommentView
+			commentView := &CommentView{}
 			commentView.Account = commentModel.Account
 			commentView.Message = commentModel.Message
 
@@ -103,19 +109,15 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 			articleView.Comments[i] = commentView
 		}
 
-		for i, innerHit := range hit.InnerHits["messages"].Hits.Hits {
-			commentModel := &CommentModel{}
-			loadModel(innerHit, commentModel)
+		for i, hitCommentModel := range hitCommentModels {
+			hitCommentView := &CommentView{}
+			hitCommentView.Account = hitCommentModel.Account
+			hitCommentView.Message = hitCommentModel.Message
 
-			var hitView CommentView
-			hitView.Account = commentModel.Account
-			hitView.Message = commentModel.Message
-
-			parsedIP, parsedTime := parseIPDateTime(articleView.Time.Year(), commentModel.IPDateTime)
-			hitView.IP = parsedIP
-			hitView.Time = parsedTime
-			articleView.Comments[i] = hitView
-			articleView.Hits[i] = hitView
+			parsedIP, parsedTime := parseIPDateTime(articleView.Time.Year(), hitCommentModel.IPDateTime)
+			hitCommentView.IP = parsedIP
+			hitCommentView.Time = parsedTime
+			articleView.Hits[i] = hitCommentView
 		}
 
 		ans = append(ans, articleView)

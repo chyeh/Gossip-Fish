@@ -11,14 +11,14 @@ type CommentModel struct {
 }
 
 type ArticleModel struct {
-	ID       string         `json:"article_id"`
-	Title    string         `json:"article_title"`
-	Author   string         `json:"author"`
-	Board    string         `json:"board"`
-	IP       string         `json:"ip"`
-	Time     string         `json:"date"`
-	Content  string         `json:"content"`
-	Comments []CommentModel `json:"messages"`
+	ID       string          `json:"article_id"`
+	Title    string          `json:"article_title"`
+	Author   string          `json:"author"`
+	Board    string          `json:"board"`
+	IP       string          `json:"ip"`
+	Time     string          `json:"date"`
+	Content  string          `json:"content"`
+	Comments []*CommentModel `json:"messages"`
 }
 
 type CommentView struct {
@@ -29,26 +29,26 @@ type CommentView struct {
 }
 
 type SearchArticlesView struct {
-	ID       string        `json:"id"`
-	Title    string        `json:"title"`
-	Author   string        `json:"author"`
-	Board    string        `json:"board"`
-	IP       string        `json:"ip"`
-	Time     time.Time     `json:"time"`
-	Content  string        `json:"content"`
-	Comments []CommentView `json:"comments"`
+	ID       string         `json:"id"`
+	Title    string         `json:"title"`
+	Author   string         `json:"author"`
+	Board    string         `json:"board"`
+	IP       string         `json:"ip"`
+	Time     time.Time      `json:"time"`
+	Content  string         `json:"content"`
+	Comments []*CommentView `json:"comments"`
 }
 
 type SearchCommentsView struct {
-	ID       string        `json:"id"`
-	Title    string        `json:"title"`
-	Author   string        `json:"author"`
-	Board    string        `json:"board"`
-	IP       string        `json:"ip"`
-	Time     time.Time     `json:"time"`
-	Content  string        `json:"content"`
-	Comments []CommentView `json:"comments"`
-	Hits     []CommentView `json:"hits"`
+	ID       string         `json:"id"`
+	Title    string         `json:"title"`
+	Author   string         `json:"author"`
+	Board    string         `json:"board"`
+	IP       string         `json:"ip"`
+	Time     time.Time      `json:"time"`
+	Content  string         `json:"content"`
+	Comments []*CommentView `json:"comments"`
+	Hits     []*CommentView `json:"hits"`
 }
 
 type Query struct {
