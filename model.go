@@ -28,6 +28,16 @@ type CommentView struct {
 	Time    time.Time `json:"time"`
 }
 
+func newCommentView(year int, commentModel *CommentModel) *CommentView {
+	parsedIP, parsedTime := parseIPDateTime(year, commentModel.IPDateTime)
+	return &CommentView{
+		Account: commentModel.Account,
+		Message: commentModel.Message,
+		IP:      parsedIP,
+		Time:    parsedTime,
+	}
+}
+
 type SearchArticlesView struct {
 	ID       string         `json:"id"`
 	Title    string         `json:"title"`
@@ -49,6 +59,27 @@ type SearchCommentsView struct {
 	Content  string         `json:"content"`
 	Comments []*CommentView `json:"comments"`
 	Hits     []*CommentView `json:"hits"`
+}
+
+func newSearchCommentsView(articleModel *ArticleModel, hitCommentModels []*CommentModel) *SearchCommentsView {
+	articleView := &SearchCommentsView{
+		ID:       articleModel.ID,
+		Title:    articleModel.Title,
+		Author:   articleModel.Author,
+		Board:    articleModel.Board,
+		IP:       articleModel.IP,
+		Time:     parseANSICTime(articleModel.Time),
+		Content:  articleModel.Content,
+		Comments: make([]*CommentView, len(articleModel.Comments)),
+		Hits:     make([]*CommentView, len(hitCommentModels)),
+	}
+	for i, commentModel := range articleModel.Comments {
+		articleView.Comments[i] = newCommentView(articleView.Time.Year(), commentModel)
+	}
+	for i, hitCommentModel := range hitCommentModels {
+		articleView.Hits[i] = newCommentView(articleView.Time.Year(), hitCommentModel)
+	}
+	return articleView
 }
 
 type Query struct {

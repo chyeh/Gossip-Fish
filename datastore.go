@@ -10,7 +10,7 @@ import (
 
 type datastore interface {
 	searchArticles(*Query) *elastic.SearchResult
-	searchComments(*Query) []SearchCommentsView
+	searchComments(*Query) []*SearchCommentsView
 }
 
 type elasticsearchClient struct {
@@ -48,7 +48,7 @@ func (c *elasticsearchClient) searchArticles(query *Query) *elastic.SearchResult
 	return result
 }
 
-func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView {
+func (c *elasticsearchClient) searchComments(query *Query) []*SearchCommentsView {
 	multiMatchQuery := elastic.
 		NewMultiMatchQuery(query.Q,
 			"messages.push_userid",
@@ -59,7 +59,7 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 	nestedQuery := elastic.
 		NewNestedQuery("messages", multiMatchQuery).
 		InnerHit(elastic.NewInnerHit())
-	result, err := c.client.Search().
+	searchResult, err := c.client.Search().
 		Index(c.index).
 		Query(nestedQuery).
 		Do(context.Background())
@@ -67,9 +67,8 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 		panic(err)
 	}
 
-	ans := make([]SearchCommentsView, 0)
-
-	for _, hit := range result.Hits.Hits {
+	result := make([]*SearchCommentsView, searchResult.TotalHits())
+	for i, hit := range searchResult.Hits.Hits {
 		articleModel := &ArticleModel{}
 		loadModel(hit, articleModel)
 		hitCommentModels := make([]*CommentModel, hit.InnerHits["messages"].Hits.TotalHits)
@@ -79,41 +78,7 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 			hitCommentModels[i] = hitCommentModel
 		}
 
-		articleView := SearchCommentsView{
-			Comments: make([]*CommentView, len(articleModel.Comments)),
-			Hits:     make([]*CommentView, len(hitCommentModels)),
-		}
-
-		articleView.ID = articleModel.ID
-		articleView.Title = articleModel.Title
-		articleView.Author = articleModel.Author
-		articleView.Board = articleModel.Board
-		articleView.IP = articleModel.IP
-		articleView.Time = parseANSICTime(articleModel.Time)
-		articleView.Content = articleModel.Content
-		for i, commentModel := range articleModel.Comments {
-			commentView := &CommentView{}
-			commentView.Account = commentModel.Account
-			commentView.Message = commentModel.Message
-
-			parsedIP, parsedTime := parseIPDateTime(articleView.Time.Year(), commentModel.IPDateTime)
-			commentView.IP = parsedIP
-			commentView.Time = parsedTime
-			articleView.Comments[i] = commentView
-		}
-
-		for i, hitCommentModel := range hitCommentModels {
-			hitCommentView := &CommentView{}
-			hitCommentView.Account = hitCommentModel.Account
-			hitCommentView.Message = hitCommentModel.Message
-
-			parsedIP, parsedTime := parseIPDateTime(articleView.Time.Year(), hitCommentModel.IPDateTime)
-			hitCommentView.IP = parsedIP
-			hitCommentView.Time = parsedTime
-			articleView.Hits[i] = hitCommentView
-		}
-
-		ans = append(ans, articleView)
+		result[i] = newSearchCommentsView(articleModel, hitCommentModels)
 	}
-	return ans
+	return result
 }
