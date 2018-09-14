@@ -72,12 +72,8 @@ func (c *elasticsearchClient) searchComments(query *Query) []SearchCommentsView 
 	ans := make([]SearchCommentsView, 0)
 
 	for _, hit := range result.Hits.Hits {
-		var articleModel ArticleModel
-		sourceBytes := []byte(*hit.Source)
-		err := json.Unmarshal(sourceBytes, &articleModel)
-		if err != nil {
-			panic(err)
-		}
+		articleModel := &ArticleModel{}
+		articleModel.load(hit)
 
 		articleView := SearchCommentsView{
 			Comments: make([]CommentView, len(articleModel.Comments)),
