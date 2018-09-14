@@ -49,6 +49,23 @@ type SearchArticlesView struct {
 	Comments []*CommentView `json:"comments"`
 }
 
+func newSearchArticlesView(articleModel *ArticleModel) *SearchArticlesView {
+	articleView := &SearchArticlesView{
+		ID:       articleModel.ID,
+		Title:    articleModel.Title,
+		Author:   articleModel.Author,
+		Board:    articleModel.Board,
+		IP:       articleModel.IP,
+		Time:     parseANSICTime(articleModel.Time),
+		Content:  articleModel.Content,
+		Comments: make([]*CommentView, len(articleModel.Comments)),
+	}
+	for i, commentModel := range articleModel.Comments {
+		articleView.Comments[i] = newCommentView(articleView.Time.Year(), commentModel)
+	}
+	return articleView
+}
+
 type SearchCommentsView struct {
 	ID       string         `json:"id"`
 	Title    string         `json:"title"`

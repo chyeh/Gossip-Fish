@@ -9,7 +9,7 @@ import (
 )
 
 type datastore interface {
-	searchArticles(*Query) *elastic.SearchResult
+	searchArticles(*Query) []*SearchArticlesView
 	searchComments(*Query) []*SearchCommentsView
 }
 
@@ -29,7 +29,7 @@ func newElasticsearchClient(elasticsearch string) *elasticsearchClient {
 	}
 }
 
-func (c *elasticsearchClient) searchArticles(query *Query) *elastic.SearchResult {
+func (c *elasticsearchClient) searchArticles(query *Query) []*SearchArticlesView {
 	multiMatchQuery := elastic.
 		NewMultiMatchQuery(query.Q,
 			"article_title",
@@ -38,12 +38,19 @@ func (c *elasticsearchClient) searchArticles(query *Query) *elastic.SearchResult
 			"content",
 		).
 		Type("phrase")
-	result, err := c.client.Search().
+	searchResult, err := c.client.Search().
 		Index(c.index).
 		Query(multiMatchQuery).
 		Do(context.Background())
 	if err != nil {
 		panic(err)
+	}
+
+	result := make([]*SearchArticlesView, searchResult.TotalHits())
+	for i, hit := range searchResult.Hits.Hits {
+		articleModel := &ArticleModel{}
+		loadModel(hit, articleModel)
+		result[i] = newSearchArticlesView(articleModel)
 	}
 	return result
 }
