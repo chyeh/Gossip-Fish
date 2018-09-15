@@ -41,16 +41,17 @@ func (c *elasticsearchClient) searchArticles(query *Query) []*SearchArticlesView
 	searchResult, err := c.client.Search().
 		Index(c.index).
 		Query(multiMatchQuery).
+		From(query.Cursor).Size(query.Limit).
 		Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
 
-	result := make([]*SearchArticlesView, searchResult.TotalHits())
-	for i, hit := range searchResult.Hits.Hits {
+	result := make([]*SearchArticlesView, 0, query.Limit)
+	for _, hit := range searchResult.Hits.Hits {
 		articleModel := &ArticleModel{}
 		loadModel(hit, articleModel)
-		result[i] = newSearchArticlesView(articleModel)
+		result = append(result, newSearchArticlesView(articleModel))
 	}
 	return result
 }
@@ -69,13 +70,14 @@ func (c *elasticsearchClient) searchComments(query *Query) []*SearchCommentsView
 	searchResult, err := c.client.Search().
 		Index(c.index).
 		Query(nestedQuery).
+		From(query.Cursor).Size(query.Limit).
 		Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
 
-	result := make([]*SearchCommentsView, searchResult.TotalHits())
-	for i, hit := range searchResult.Hits.Hits {
+	result := make([]*SearchCommentsView, 0, query.Limit)
+	for _, hit := range searchResult.Hits.Hits {
 		articleModel := &ArticleModel{}
 		loadModel(hit, articleModel)
 		hitCommentModels := make([]*CommentModel, hit.InnerHits["messages"].Hits.TotalHits)
@@ -85,7 +87,7 @@ func (c *elasticsearchClient) searchComments(query *Query) []*SearchCommentsView
 			hitCommentModels[i] = hitCommentModel
 		}
 
-		result[i] = newSearchCommentsView(articleModel, hitCommentModels)
+		result = append(result, newSearchCommentsView(articleModel, hitCommentModels))
 	}
 	return result
 }

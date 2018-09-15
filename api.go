@@ -59,7 +59,7 @@ func (s *apiServer) routes() {
 }
 
 func (s *apiServer) getSearchArticles(c *gin.Context) {
-	query := &Query{}
+	query := newQuery()
 	if err := c.ShouldBindQuery(query); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
@@ -69,7 +69,7 @@ func (s *apiServer) getSearchArticles(c *gin.Context) {
 }
 
 func (s *apiServer) getSearchComments(c *gin.Context) {
-	query := &Query{}
+	query := newQuery()
 	if err := c.ShouldBindQuery(query); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return

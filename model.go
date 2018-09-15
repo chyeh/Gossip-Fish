@@ -100,5 +100,15 @@ func newSearchCommentsView(articleModel *ArticleModel, hitCommentModels []*Comme
 }
 
 type Query struct {
-	Q string `form:"q"`
+	Q      string `form:"q"`
+	Cursor int    `form:"cursor"`
+	Limit  int    `form:"limit"`
+}
+
+func newQuery() *Query {
+	return &Query{
+		Q:      "",
+		Cursor: 0,
+		Limit:  10,
+	}
 }
