@@ -9,8 +9,8 @@ import (
 )
 
 type datastore interface {
-	searchArticles(*Query) []*SearchArticlesView
-	searchComments(*Query) []*SearchCommentsView
+	searchArticles(*Query) *SearchArticlesView
+	searchComments(*Query) *SearchCommentsView
 }
 
 type elasticsearchClient struct {
@@ -29,7 +29,7 @@ func newElasticsearchClient(elasticsearch string) *elasticsearchClient {
 	}
 }
 
-func (c *elasticsearchClient) searchArticles(query *Query) []*SearchArticlesView {
+func (c *elasticsearchClient) searchArticles(query *Query) *SearchArticlesView {
 	multiMatchQuery := elastic.
 		NewMultiMatchQuery(query.Q,
 			"article_title",
@@ -47,16 +47,21 @@ func (c *elasticsearchClient) searchArticles(query *Query) []*SearchArticlesView
 		panic(err)
 	}
 
-	result := make([]*SearchArticlesView, 0, query.Limit)
+	records := make([]*SearchArticleView, 0, query.Limit)
 	for _, hit := range searchResult.Hits.Hits {
 		articleModel := &ArticleModel{}
 		loadModel(hit, articleModel)
-		result = append(result, newSearchArticlesView(articleModel))
+		records = append(records, newSearchArticleView(articleModel))
 	}
-	return result
+
+	metadata := newMetadata(query.Cursor, query.Limit, int(searchResult.TotalHits()))
+	return &SearchArticlesView{
+		Metadata: metadata,
+		Records:  records,
+	}
 }
 
-func (c *elasticsearchClient) searchComments(query *Query) []*SearchCommentsView {
+func (c *elasticsearchClient) searchComments(query *Query) *SearchCommentsView {
 	multiMatchQuery := elastic.
 		NewMultiMatchQuery(query.Q,
 			"messages.push_userid",
@@ -76,7 +81,7 @@ func (c *elasticsearchClient) searchComments(query *Query) []*SearchCommentsView
 		panic(err)
 	}
 
-	result := make([]*SearchCommentsView, 0, query.Limit)
+	records := make([]*SearchCommentView, 0, query.Limit)
 	for _, hit := range searchResult.Hits.Hits {
 		articleModel := &ArticleModel{}
 		loadModel(hit, articleModel)
@@ -87,7 +92,11 @@ func (c *elasticsearchClient) searchComments(query *Query) []*SearchCommentsView
 			hitCommentModels[i] = hitCommentModel
 		}
 
-		result = append(result, newSearchCommentsView(articleModel, hitCommentModels))
+		records = append(records, newSearchCommentView(articleModel, hitCommentModels))
 	}
-	return result
+	metadata := newMetadata(query.Cursor, query.Limit, int(searchResult.TotalHits()))
+	return &SearchCommentsView{
+		Metadata: metadata,
+		Records:  records,
+	}
 }

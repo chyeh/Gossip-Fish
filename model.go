@@ -39,6 +39,11 @@ func newCommentView(year int, commentModel *CommentModel) *CommentView {
 }
 
 type SearchArticlesView struct {
+	Metadata *Metadata            `json:"_metadata"`
+	Records  []*SearchArticleView `json:"records"`
+}
+
+type SearchArticleView struct {
 	ID       string         `json:"id"`
 	Title    string         `json:"title"`
 	Author   string         `json:"author"`
@@ -49,8 +54,8 @@ type SearchArticlesView struct {
 	Comments []*CommentView `json:"comments"`
 }
 
-func newSearchArticlesView(articleModel *ArticleModel) *SearchArticlesView {
-	view := &SearchArticlesView{
+func newSearchArticleView(articleModel *ArticleModel) *SearchArticleView {
+	view := &SearchArticleView{
 		ID:       articleModel.ID,
 		Title:    articleModel.Title,
 		Author:   articleModel.Author,
@@ -67,6 +72,11 @@ func newSearchArticlesView(articleModel *ArticleModel) *SearchArticlesView {
 }
 
 type SearchCommentsView struct {
+	Metadata *Metadata            `json:"_metadata"`
+	Records  []*SearchCommentView `json:"records"`
+}
+
+type SearchCommentView struct {
 	ID       string         `json:"id"`
 	Title    string         `json:"title"`
 	Author   string         `json:"author"`
@@ -78,8 +88,8 @@ type SearchCommentsView struct {
 	Hits     []*CommentView `json:"hits"`
 }
 
-func newSearchCommentsView(articleModel *ArticleModel, hitCommentModels []*CommentModel) *SearchCommentsView {
-	view := &SearchCommentsView{
+func newSearchCommentView(articleModel *ArticleModel, hitCommentModels []*CommentModel) *SearchCommentView {
+	view := &SearchCommentView{
 		ID:       articleModel.ID,
 		Title:    articleModel.Title,
 		Author:   articleModel.Author,
@@ -111,4 +121,24 @@ func newQuery() *Query {
 		Cursor: 0,
 		Limit:  10,
 	}
+}
+
+type Metadata struct {
+	Cursor     int `json:"cursor"`
+	Limit      int `json:"limit"`
+	TotalCount int `json:"total_count"`
+	NextCursor int `json:"next_cursor"`
+}
+
+func newMetadata(cursor, limit, totalCount int) *Metadata {
+	meta := &Metadata{
+		Cursor:     cursor,
+		Limit:      limit,
+		TotalCount: totalCount,
+		NextCursor: cursor + limit,
+	}
+	if cursor+limit >= totalCount {
+		meta.NextCursor = -1
+	}
+	return meta
 }
