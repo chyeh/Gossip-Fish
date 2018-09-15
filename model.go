@@ -2,7 +2,11 @@ package main
 
 import (
 	"time"
+
+	validator "gopkg.in/go-playground/validator.v9"
 )
+
+var validate = validator.New()
 
 type CommentModel struct {
 	Account    string `json:"push_userid"`
@@ -111,8 +115,8 @@ func newSearchCommentView(articleModel *ArticleModel, hitCommentModels []*Commen
 
 type Query struct {
 	Q      string `form:"q"`
-	Cursor int    `form:"cursor"`
-	Limit  int    `form:"limit"`
+	Cursor int    `form:"cursor" validate:"min=0"`
+	Limit  int    `form:"limit" validate:"min=0"`
 }
 
 func newQuery() *Query {

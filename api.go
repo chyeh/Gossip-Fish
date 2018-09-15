@@ -64,6 +64,9 @@ func (s *apiServer) getSearchArticles(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	if err := validate.Struct(query); err != nil {
+		panic(err)
+	}
 	result := s.datastore.searchArticles(query)
 	c.JSON(http.StatusOK, result)
 }
@@ -73,6 +76,9 @@ func (s *apiServer) getSearchComments(c *gin.Context) {
 	if err := c.ShouldBindQuery(query); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
+	}
+	if err := validate.Struct(query); err != nil {
+		panic(err)
 	}
 	result := s.datastore.searchComments(query)
 	c.JSON(http.StatusOK, result)
