@@ -4,7 +4,6 @@ import (
 	"context"
 
 	_ "github.com/lib/pq"
-
 	"github.com/olivere/elastic"
 )
 
@@ -85,11 +84,13 @@ func (c *elasticsearchClient) searchComments(query *Query) *SearchCommentsView {
 	for _, hit := range searchResult.Hits.Hits {
 		articleModel := &ArticleModel{}
 		loadModel(hit, articleModel)
-		hitCommentModels := make([]*CommentModel, hit.InnerHits["messages"].Hits.TotalHits)
-		for i, innerHit := range hit.InnerHits["messages"].Hits.Hits {
+		// The "total" field in the inner hits JSON object does not always mean
+		// the number of hit documents.
+		hitCommentModels := make([]*CommentModel, 0, len(hit.InnerHits["messages"].Hits.Hits))
+		for _, innerHit := range hit.InnerHits["messages"].Hits.Hits {
 			hitCommentModel := &CommentModel{}
 			loadModel(innerHit, hitCommentModel)
-			hitCommentModels[i] = hitCommentModel
+			hitCommentModels = append(hitCommentModels, hitCommentModel)
 		}
 
 		records = append(records, newSearchCommentView(articleModel, hitCommentModels))
