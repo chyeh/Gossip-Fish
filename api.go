@@ -54,8 +54,9 @@ func (s *apiServer) shutdown() {
 }
 
 func (s *apiServer) routes() {
-	s.httpServer.router.GET("/search/articles", s.getSearchArticles)
-	s.httpServer.router.GET("/search/comments", s.getSearchComments)
+	v1 := s.httpServer.router.Group("/api/v1")
+	v1.GET("/search/articles", s.getSearchArticles)
+	v1.GET("/search/comments", s.getSearchComments)
 }
 
 func (s *apiServer) getSearchArticles(c *gin.Context) {
