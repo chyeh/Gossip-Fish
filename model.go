@@ -50,7 +50,7 @@ type SearchArticlesView struct {
 }
 
 func newSearchArticlesView(articleModel *ArticleModel) *SearchArticlesView {
-	articleView := &SearchArticlesView{
+	view := &SearchArticlesView{
 		ID:       articleModel.ID,
 		Title:    articleModel.Title,
 		Author:   articleModel.Author,
@@ -61,9 +61,9 @@ func newSearchArticlesView(articleModel *ArticleModel) *SearchArticlesView {
 		Comments: make([]*CommentView, len(articleModel.Comments)),
 	}
 	for i, commentModel := range articleModel.Comments {
-		articleView.Comments[i] = newCommentView(articleView.Time.Year(), commentModel)
+		view.Comments[i] = newCommentView(view.Time.Year(), commentModel)
 	}
-	return articleView
+	return view
 }
 
 type SearchCommentsView struct {
@@ -79,7 +79,7 @@ type SearchCommentsView struct {
 }
 
 func newSearchCommentsView(articleModel *ArticleModel, hitCommentModels []*CommentModel) *SearchCommentsView {
-	articleView := &SearchCommentsView{
+	view := &SearchCommentsView{
 		ID:       articleModel.ID,
 		Title:    articleModel.Title,
 		Author:   articleModel.Author,
@@ -91,12 +91,12 @@ func newSearchCommentsView(articleModel *ArticleModel, hitCommentModels []*Comme
 		Hits:     make([]*CommentView, len(hitCommentModels)),
 	}
 	for i, commentModel := range articleModel.Comments {
-		articleView.Comments[i] = newCommentView(articleView.Time.Year(), commentModel)
+		view.Comments[i] = newCommentView(view.Time.Year(), commentModel)
 	}
 	for i, hitCommentModel := range hitCommentModels {
-		articleView.Hits[i] = newCommentView(articleView.Time.Year(), hitCommentModel)
+		view.Hits[i] = newCommentView(view.Time.Year(), hitCommentModel)
 	}
-	return articleView
+	return view
 }
 
 type Query struct {
