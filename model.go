@@ -32,8 +32,8 @@ type CommentView struct {
 	Time    time.Time `json:"time"`
 }
 
-func newCommentView(year int, commentModel *CommentModel) *CommentView {
-	parsedIP, parsedTime := parseIPDateTime(year, commentModel.IPDateTime)
+func newCommentView(articleTime time.Time, commentModel *CommentModel) *CommentView {
+	parsedIP, parsedTime := parseCommentIPDateTime(articleTime, commentModel.IPDateTime)
 	return &CommentView{
 		Account: commentModel.Account,
 		Message: commentModel.Message,
@@ -70,7 +70,7 @@ func newSearchArticleView(articleModel *ArticleModel) *SearchArticleView {
 		Comments: make([]*CommentView, len(articleModel.Comments)),
 	}
 	for i, commentModel := range articleModel.Comments {
-		view.Comments[i] = newCommentView(view.Time.Year(), commentModel)
+		view.Comments[i] = newCommentView(view.Time, commentModel)
 	}
 	return view
 }
@@ -101,14 +101,14 @@ func newSearchCommentView(articleModel *ArticleModel, hitCommentModels []*Commen
 		IP:       articleModel.IP,
 		Time:     parseANSICTime(articleModel.Time),
 		Content:  articleModel.Content,
-		Comments: make([]*CommentView, len(articleModel.Comments)),
-		Hits:     make([]*CommentView, len(hitCommentModels)),
+		Comments: make([]*CommentView, 0, len(articleModel.Comments)),
+		Hits:     make([]*CommentView, 0, len(hitCommentModels)),
 	}
-	for i, commentModel := range articleModel.Comments {
-		view.Comments[i] = newCommentView(view.Time.Year(), commentModel)
+	for _, commentModel := range articleModel.Comments {
+		view.Comments = append(view.Comments, newCommentView(view.Time, commentModel))
 	}
-	for i, hitCommentModel := range hitCommentModels {
-		view.Hits[i] = newCommentView(view.Time.Year(), hitCommentModel)
+	for _, hitCommentModel := range hitCommentModels {
+		view.Hits = append(view.Hits, newCommentView(view.Time, hitCommentModel))
 	}
 	return view
 }
